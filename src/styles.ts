@@ -1,5 +1,6 @@
 import NativeTachyons, { styles } from 'react-native-style-tachyons'
 import { StyleSheet } from 'react-native'
+import { variables } from 'native-base'
 
 NativeTachyons.build({
   rem: 16,
@@ -9,7 +10,11 @@ NativeTachyons.build({
   }
 }, StyleSheet)
 
-const colors = {}
+const colors = {
+  success: variables.brandSuccess,
+  danger: variables.brandDanger,
+  warning: variables.brandWarning
+}
 
 const layout = {}
 
