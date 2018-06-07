@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { Body, Button, Container, Content, H3, Header, Text, Title } from 'native-base'
 import { s } from '../styles'
-import * as Wallet from 'ethereumjs-wallet'
 import * as Util from 'ethereumjs-util'
+import { generateSecureRandom } from 'react-native-securerandom'
 import { AsyncStorage } from 'react-native'
 import QRScan from '../components/KeyQRScanner'
+import { Buffer } from 'buffer'
 
 export interface Props {
 
@@ -19,19 +20,18 @@ export default class AddWallet extends React.Component<Props, State> {
     cameraOpen: false
   }
 
-  saveWallet = (wallet) => {
+  saveWallet = (privateKey, address) => {
     return AsyncStorage.multiSet([
-      ['wallet_private_key', wallet.getPrivateKey()],
-      ['wallet_address', wallet.getAddress()]
+      ['wallet_private_key', privateKey],
+      ['wallet_address', address]
     ])
   }
 
   generateWallet = () => {
-    const wallet = Wallet.generate()
-
-    this.saveWallet(wallet).then(() => {
-      this.nextPage()
-    })
+    generateSecureRandom(32)
+    .then((bytes) => Buffer.from(bytes))
+    .then((buffer) => this.saveWallet(buffer, Util.privateToAddress(buffer)))
+    .then(() => this.nextPage())
   }
 
   importWallet = () => {
@@ -46,9 +46,11 @@ export default class AddWallet extends React.Component<Props, State> {
         cameraOpen: false
       })
 
-      const wallet = Wallet.fromPrivateKey(Util.toBuffer(data))
+      const privateKey = Util.toBuffer(data)
+      const address = Util.privateToAddress(privateKey)
 
-      this.saveWallet(wallet).then(() => {
+      this.saveWallet(privateKey, address).then(() => {
+        console.log('saved')
         this.nextPage()
       })
     }
