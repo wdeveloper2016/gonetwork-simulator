@@ -1,31 +1,61 @@
 import * as React from 'react'
-import { Body, Button, Container, Content, H2, H3, Header, Text, Title } from 'native-base'
+import { Body, Button, Container, Content, H3, Header, Text, Title } from 'native-base'
 import { s } from '../styles'
 import * as Wallet from 'ethereumjs-wallet'
+import * as Util from 'ethereumjs-util'
 import { AsyncStorage } from 'react-native'
+import QRScan from '../components/KeyQRScanner'
 
 export interface Props {
 
 }
 
 export interface State {
-
+  cameraOpen: boolean
 }
 
 export default class AddWallet extends React.Component<Props, State> {
+  state: State = {
+    cameraOpen: false
+  }
+
+  saveWallet = (wallet) => {
+    return AsyncStorage.multiSet([
+      ['wallet_private_key', wallet.getPrivateKey()],
+      ['wallet_address', wallet.getAddress()]
+    ])
+  }
+
   generateWallet = () => {
     const wallet = Wallet.generate()
 
-    AsyncStorage.multiSet([
-      ['wallet_private_key', wallet.getPrivateKey()],
-      ['wallet_address', wallet.getAddress()]
-    ]).then(() => {
-      // TODO main screen?
+    this.saveWallet(wallet).then(() => {
+      this.nextPage()
     })
   }
 
   importWallet = () => {
-    // TODO camera
+    this.setState({
+      cameraOpen: true
+    })
+  }
+
+  handleCameraDone = (status, data?) => {
+    if (status === 'success') {
+      this.setState({
+        cameraOpen: false
+      })
+
+      const wallet = Wallet.fromPrivateKey(Util.toBuffer(data))
+
+      this.saveWallet(wallet).then(() => {
+        this.nextPage()
+      })
+    }
+  }
+
+  nextPage = () => {
+    // TODO next page
   }
 
   render () {
@@ -43,6 +73,8 @@ export default class AddWallet extends React.Component<Props, State> {
           <Button block style={ [s.ma2] } onPress={ this.importWallet }>
             <Text>Import using camera</Text>
           </Button>
+
+          { this.state.cameraOpen && <QRScan onDone={ this.handleCameraDone } scanFor='private' /> }
 
           <Button block style={ [s.ma2] } onPress={ this.generateWallet }>
             <Text>Generate a new wallet</Text>
