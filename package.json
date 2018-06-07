@@ -16,6 +16,7 @@
     "ethereumjs-util": "^5.2.0",
     "ethereumjs-wallet": "^0.6.0",
     "go-network-framework": "^0.1.1",
+    "mqtt": "^2.18.0",
     "native-base": "^2.4.5",
     "node-libs-browser": "^2.1.0",
     "process": "^0.11.10",
